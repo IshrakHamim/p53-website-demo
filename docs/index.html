@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>P53 — Premium Scrubs & OT Dresses</title>
+  <meta name="description" content="P53 — premium scrubs, OT dresses and white coats for Bangladesh's healthcare heroes. Rotate every product in 360°." />
+  <meta name="theme-color" content="#0f2a44" />
+  <link rel="icon" href="img/brand/logo.png" />
+  <meta property="og:title" content="P53 — Premium Scrubs & OT Dresses" />
+  <meta property="og:description" content="Made for comfort. Made for care. Explore every scrub in 360°." />
+  <meta property="og:image" content="img/brand/logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700;1,800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="announce">
+    <div class="announce-track">
+      <span>✦ Demo preview — online ordering coming soon</span>
+      <span>✦ Rotate every scrub in 360° before you buy</span>
+      <span>✦ Free name embroidery on selected OT dresses</span>
+      <span>✦ Sizes M to 4XL</span>
+      <span aria-hidden="true">✦ Demo preview — online ordering coming soon</span>
+      <span aria-hidden="true">✦ Rotate every scrub in 360° before you buy</span>
+      <span aria-hidden="true">✦ Free name embroidery on selected OT dresses</span>
+      <span aria-hidden="true">✦ Sizes M to 4XL</span>
+    </div>
+  </div>
+
+  <header class="site-header" id="header">
+    <div class="header-inner">
+      <button class="icon-btn menu-toggle" aria-label="Open menu" data-action="menu">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <a href="#/" class="brand" aria-label="P53 home"><img src="img/brand/logo.png" alt="P53" /></a>
+      <nav class="main-nav" aria-label="Main">
+        <div class="nav-item has-mega" data-mega="women"><a href="#/shop?gender=women">Women</a></div>
+        <div class="nav-item has-mega" data-mega="men"><a href="#/shop?gender=men">Men</a></div>
+        <div class="nav-item"><a href="#/shop?category=three-quarter">Three-Quarter</a></div>
+        <div class="nav-item"><a href="#/shop?category=summer-lite">Summer Lite</a></div>
+        <div class="nav-item"><a href="#/shop?category=white-coat">White Coats</a></div>
+        <div class="nav-item"><a href="#/size-guide">Size Guide</a></div>
+        <div class="nav-item"><a href="#/about">About</a></div>
+      </nav>
+      <div class="header-actions">
+        <button class="icon-btn" aria-label="Search" data-action="search">
+          <svg viewBox="0 0 24 24" width="21" height="21"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+        <button class="icon-btn hide-sm" aria-label="Account" data-action="account">
+          <svg viewBox="0 0 24 24" width="21" height="21"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+        <button class="icon-btn bag-btn" aria-label="Bag" data-action="bag">
+          <svg viewBox="0 0 24 24" width="21" height="21"><path d="M5 8h14l-1 13H6L5 8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8V6a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+          <span class="bag-count" id="bagCount">0</span>
+        </button>
+      </div>
+    </div>
+    <div class="mega" id="mega" aria-hidden="true"></div>
+  </header>
+
+  <aside class="drawer" id="mobileMenu" aria-hidden="true">
+    <div class="drawer-panel">
+      <div class="drawer-head"><img src="img/brand/logo.png" alt="P53" height="40" /><button class="icon-btn" data-action="close" aria-label="Close">✕</button></div>
+      <nav class="drawer-nav" id="drawerNav"></nav>
+    </div>
+  </aside>
+
+  <aside class="drawer right" id="bagDrawer" aria-hidden="true">
+    <div class="drawer-panel">
+      <div class="drawer-head"><h3>Your bag</h3><button class="icon-btn" data-action="close" aria-label="Close">✕</button></div>
+      <div id="bagBody" class="bag-body"></div>
+    </div>
+  </aside>
+
+  <div class="search-overlay" id="search" aria-hidden="true">
+    <div class="search-box">
+      <input type="search" id="searchInput" placeholder="Search scrubs, colours, OT dresses…" autocomplete="off" />
+      <button class="icon-btn" data-action="close" aria-label="Close search">✕</button>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+
+  <main id="app" tabindex="-1"></main>
+
+  <footer class="site-footer">
+    <div class="footer-top container">
+      <div class="footer-brand">
+        <img src="img/brand/logo-white.png" alt="P53" height="64" />
+        <p>Premium scrubs, OT dresses and white coats, made for the healthcare heroes of Bangladesh.</p>
+        <a class="social" href="https://www.facebook.com/p53ltd" target="_blank" rel="noopener" aria-label="P53 on Facebook">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M14 8h3V4h-3c-2.8 0-4.5 1.7-4.5 4.6V11H7v4h2.5v9h4v-9H17l.5-4h-4V9c0-.6.4-1 1-1Z"/></svg>
+          Follow on Facebook
+        </a>
+      </div>
+      <div><h4>Shop</h4><a href="#/shop?gender=women">Women</a><a href="#/shop?gender=men">Men</a><a href="#/shop?category=three-quarter">Three-Quarter Sleeve</a><a href="#/shop?category=summer-lite">Summer Lite</a><a href="#/shop?category=white-coat">White Coats</a><a href="#/shop?category=caps">Surgical Caps</a></div>
+      <div><h4>Support</h4><a href="#/size-guide">Size Guide</a><a href="#/about">Contact Us</a><a href="#/about" data-soon>Order Status</a><a href="#/about" data-soon>Returns & Exchange</a><a href="#/about" data-soon>Bulk / Hospital Orders</a></div>
+      <div><h4>Company</h4><a href="#/about">About P53</a><a href="#/about" data-soon>Careers</a><a href="#/about" data-soon>Privacy Policy</a><a href="#/about" data-soon>Terms of Service</a></div>
+    </div>
+    <div class="footer-bottom container">
+      <span>© 2026 P53 Ltd. All rights reserved.</span>
+      <span>Demo website — prices & checkout coming soon</span>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
