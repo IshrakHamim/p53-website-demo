@@ -1,4 +1,4 @@
-import { PRODUCTS, CATEGORIES, COLLECTIONS, SIZE_CHARTS, TESTIMONIALS, FACEBOOK_URL, getProduct, formatPrice } from './data.js';
+import { PRODUCTS, CATEGORIES, SIZE_CHARTS, TESTIMONIALS, FACEBOOK_URL, getProduct, formatPrice } from './data.js';
 import { flatlaySVG } from './flatlay.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -271,62 +271,45 @@ function shop(params) {
   const state = {
     gender: params.get('gender') || 'all',
     category: params.get('category') || 'all',
-    collection: params.get('collection') || 'all',
     colour: params.get('colour') || 'all',
     size: params.get('size') || 'all',
     sort: params.get('sort') || 'featured',
   };
-  const title = state.gender !== 'all' ? GENDER_LABEL[state.gender] : state.category !== 'all' ? CATEGORIES.find((c) => c.id === state.category)?.name : 'All Products';
   const colours = [...new Map(PRODUCTS.map((p) => [p.color.name, p.color.hex])).entries()];
   const sizes = ['M', 'L', 'XL', 'XXL', '3XL', '4XL'];
 
-  const radio = (name, value, label, count) => `
-    <label class="opt"><input type="radio" name="${name}" value="${value}" ${state[name] === value ? 'checked' : ''}/><span>${label}</span>${count != null ? `<em>${count}</em>` : ''}</label>`;
-
   app.innerHTML = `
-  <section class="page-head container">
-    <nav class="crumbs"><a href="#/">Home</a><span>/</span><span>Shop</span></nav>
-    <h1>${title}</h1>
-    <p class="muted">Every product rendered in 3D. Hover to see the folded set, open to rotate 360°.</p>
+  <section class="page-head container shop-head">
+    <h1>Shop</h1>
+    <div class="seg" role="radiogroup" aria-label="Shopping for">
+      <span class="seg-label">Shopping for</span>
+      ${[['all', 'All'], ['women', 'Women'], ['men', 'Men']].map(([v, l]) => `<button role="radio" data-gender="${v}" class="${state.gender === v ? 'active' : ''}" aria-checked="${state.gender === v}">${l}</button>`).join('')}
+    </div>
   </section>
   <section class="container shop">
-    <aside class="filters" id="filters">
-      <div class="filters-head"><h3>Filter</h3><button class="link" data-reset>Reset</button></div>
-      <details open><summary>Shop for</summary>
-        ${radio('gender', 'all', 'Everyone')}${radio('gender', 'women', 'Women')}${radio('gender', 'men', 'Men')}${radio('gender', 'unisex', 'Unisex only')}
-      </details>
-      <details open><summary>Category</summary>
-        ${radio('category', 'all', 'All categories')}
-        ${CATEGORIES.map((c) => radio('category', c.id, c.name, PRODUCTS.filter((p) => p.categories.includes(c.id)).length)).join('')}
-      </details>
-      <details open><summary>Collection</summary>
-        ${radio('collection', 'all', 'All collections')}${COLLECTIONS.map((c) => radio('collection', c, c)).join('')}
-      </details>
-      <details open><summary>Colour</summary>
-        <div class="colour-filter">
-          <button class="cf ${state.colour === 'all' ? 'active' : ''}" data-colour="all" title="All colours">All</button>
-          ${colours.map(([n, h]) => `<button class="cf dot ${state.colour === n ? 'active' : ''}" data-colour="${n}" style="--c:${h}" title="${n}" aria-label="${n}"></button>`).join('')}
-        </div>
-      </details>
-      <details open><summary>Size</summary>
-        <div class="size-filter">
-          <button class="sf ${state.size === 'all' ? 'active' : ''}" data-size="all">All</button>
-          ${sizes.map((s) => `<button class="sf ${state.size === s ? 'active' : ''}" data-size="${s}">${s}</button>`).join('')}
-        </div>
-      </details>
-    </aside>
-    <div class="shop-main">
-      <div class="shop-bar">
-        <button class="btn btn-sm btn-ghost filter-toggle" data-filters>Filters</button>
-        <span id="count" class="muted"></span>
-        <label class="sort">Sort
-          <select id="sort">
-            <option value="featured">Featured</option><option value="name">Name A–Z</option><option value="new">Newest</option>
-          </select>
-        </label>
+    <div class="shop-bar">
+      <div class="chips" id="chips">
+        <button data-category="all" class="${state.category === 'all' ? 'active' : ''}">All</button>
+        ${CATEGORIES.map((c) => `<button data-category="${c.id}" class="${state.category === c.id ? 'active' : ''}">${c.name}</button>`).join('')}
       </div>
-      <div class="grid products-grid" id="grid"></div>
+      <div class="bar-right">
+        <button class="filter-btn" data-filters aria-expanded="false">Filter<span id="fcount"></span></button>
+        <select id="sort" aria-label="Sort">
+          <option value="featured">Featured</option><option value="name">Name A–Z</option><option value="new">Newest</option>
+        </select>
+      </div>
     </div>
+    <div class="filter-panel" id="filterPanel" hidden>
+      <div><h5>Colour</h5><div class="colour-filter">
+        ${colours.map(([n, h]) => `<button class="cf dot ${state.colour === n ? 'active' : ''}" data-colour="${n}" style="--c:${h}" title="${n}" aria-label="${n}"></button>`).join('')}
+      </div></div>
+      <div><h5>Size</h5><div class="size-filter">
+        ${sizes.map((s) => `<button class="sf ${state.size === s ? 'active' : ''}" data-size="${s}">${s}</button>`).join('')}
+      </div></div>
+      <button class="link" data-clear>Clear</button>
+    </div>
+    <p id="count" class="muted count"></p>
+    <div class="grid products-grid" id="grid"></div>
   </section>`;
 
   $('#sort').value = state.sort;
@@ -335,31 +318,36 @@ function shop(params) {
     let list = PRODUCTS.filter((p) => {
       if (state.gender === 'women' && !['women', 'unisex'].includes(p.gender)) return false;
       if (state.gender === 'men' && !['men', 'unisex'].includes(p.gender)) return false;
-      if (state.gender === 'unisex' && p.gender !== 'unisex') return false;
       if (state.category !== 'all' && !p.categories.includes(state.category)) return false;
-      if (state.collection !== 'all' && p.collection !== state.collection) return false;
       if (state.colour !== 'all' && p.color.name !== state.colour) return false;
       if (state.size !== 'all' && !p.sizes.includes(state.size)) return false;
       return true;
     });
     if (state.sort === 'name') list = [...list].sort((a, b) => a.name.localeCompare(b.name));
     if (state.sort === 'new') list = [...list].reverse();
-    $('#grid').innerHTML = list.length ? list.map(card).join('') : `<div class="empty"><h3>No products match</h3><p>Try removing a filter.</p><button class="btn btn-primary" data-reset>Reset filters</button></div>`;
+    $('#grid').innerHTML = list.length ? list.map(card).join('') : `<div class="empty"><h3>Nothing here yet</h3><p>Try another category or clear filters.</p><button class="btn btn-primary" data-reset>Show everything</button></div>`;
     $('#count').textContent = `${list.length} product${list.length === 1 ? '' : 's'}`;
-    // keep the URL shareable without re-rendering
+    const n = (state.colour !== 'all') + (state.size !== 'all');
+    $('#fcount').textContent = n ? ` · ${n}` : '';
     const q = new URLSearchParams(Object.entries(state).filter(([, v]) => v !== 'all' && v !== 'featured'));
     history.replaceState(null, '', `#/shop${q.toString() ? `?${q}` : ''}`);
     hydrateStills($('#grid'));
   };
 
-  $('#filters').addEventListener('change', (e) => { if (e.target.name) { state[e.target.name] = e.target.value; apply(); } });
   const handler = (e) => {
-    const t = e.target.closest('[data-colour],[data-size],[data-reset],[data-filters]');
+    const t = e.target.closest('[data-gender],[data-category],[data-colour],[data-size],[data-reset],[data-clear],[data-filters]');
     if (!t) return;
-    if (t.dataset.colour) { state.colour = t.dataset.colour; $$('.cf').forEach((b) => b.classList.toggle('active', b === t)); }
-    if (t.dataset.size) { state.size = t.dataset.size; $$('.sf').forEach((b) => b.classList.toggle('active', b === t)); }
-    if (t.hasAttribute('data-reset')) { if (location.hash === '#/shop') route(); else location.hash = '#/shop'; return; }
-    if (t.hasAttribute('data-filters')) { $('#filters').classList.toggle('open'); return; }
+    const toggleOne = (key, val, sel) => {
+      state[key] = state[key] === val ? 'all' : val;
+      $$(sel).forEach((b) => b.classList.toggle('active', b.dataset[key] === state[key]));
+    };
+    if (t.dataset.gender) { state.gender = t.dataset.gender; $$('[data-gender]').forEach((b) => { b.classList.toggle('active', b === t); b.setAttribute('aria-checked', b === t); }); }
+    else if (t.dataset.category) { state.category = t.dataset.category; $$('[data-category]').forEach((b) => b.classList.toggle('active', b === t)); }
+    else if (t.dataset.colour) toggleOne('colour', t.dataset.colour, '.cf');
+    else if (t.dataset.size) toggleOne('size', t.dataset.size, '.sf');
+    else if (t.hasAttribute('data-clear')) { state.colour = 'all'; state.size = 'all'; $$('.cf,.sf').forEach((b) => b.classList.remove('active')); }
+    else if (t.hasAttribute('data-filters')) { const p = $('#filterPanel'); p.hidden = !p.hidden; t.setAttribute('aria-expanded', !p.hidden); return; }
+    else if (t.hasAttribute('data-reset')) { history.replaceState(null, '', '#/shop'); route(); return; }
     apply();
   };
   app.addEventListener('click', handler);
@@ -608,49 +596,12 @@ const bag = {
 /* =========================================================
    Header: mega menu, drawers, search
    ========================================================= */
-function megaContent(gender) {
-  const list = PRODUCTS.filter((p) => p.gender === gender || p.gender === 'unisex');
-  const cats = CATEGORIES.filter((c) => list.some((p) => p.categories.includes(c.id)));
-  const cols = [...new Map(list.map((p) => [p.color.name, p.color.hex])).entries()];
-  const feature = list.find((p) => p.badge) || list[0];
-  return `
-  <div class="mega-inner container">
-    <div class="mega-col"><h5>Featured</h5>
-      <a href="#/shop?gender=${gender}">Shop all ${GENDER_LABEL[gender]}</a>
-      <a href="#/shop?gender=${gender}&collection=Premium">Premium collection</a>
-      <a href="#/shop?gender=${gender}&category=summer-lite">Summer Lite</a>
-      <a href="#/size-guide">Size guide</a>
-    </div>
-    <div class="mega-col"><h5>Shop by category</h5>${cats.map((c) => `<a href="#/shop?gender=${gender}&category=${c.id}">${c.name}</a>`).join('')}</div>
-    <div class="mega-col"><h5>Shop by colour</h5><div class="mega-colours">${cols.map(([n, h]) => `<a href="#/shop?gender=${gender}&colour=${encodeURIComponent(n)}"><i style="--c:${h}"></i>${n}</a>`).join('')}</div></div>
-    <a class="mega-feature" href="#/product/${feature.slug}">
-      <img src="${IMG}${feature.photos[0]}" alt="${feature.name}" />
-      <span>${feature.name}</span>
-    </a>
-  </div>`;
-}
-
 function initHeader() {
-  const mega = $('#mega');
-  let closeT;
-  $$('.has-mega').forEach((item) => {
-    const open = () => { clearTimeout(closeT); mega.innerHTML = megaContent(item.dataset.mega); mega.classList.add('open'); mega.setAttribute('aria-hidden', 'false'); };
-    item.addEventListener('mouseenter', open);
-    item.addEventListener('focusin', open);
-    item.addEventListener('mouseleave', () => (closeT = setTimeout(() => mega.classList.remove('open'), 160)));
-  });
-  mega.addEventListener('mouseenter', () => clearTimeout(closeT));
-  mega.addEventListener('mouseleave', () => mega.classList.remove('open'));
-  mega.addEventListener('click', () => mega.classList.remove('open'));
-
   $('#drawerNav').innerHTML = `
     <a href="#/">Home</a>
-    <details><summary>Women</summary><a href="#/shop?gender=women">Shop all women</a>${CATEGORIES.map((c) => `<a href="#/shop?gender=women&category=${c.id}">${c.name}</a>`).join('')}</details>
-    <details><summary>Men</summary><a href="#/shop?gender=men">Shop all men</a>${CATEGORIES.map((c) => `<a href="#/shop?gender=men&category=${c.id}">${c.name}</a>`).join('')}</details>
-    <a href="#/shop?category=three-quarter">Three-Quarter Sleeve</a>
-    <a href="#/shop?category=summer-lite">Summer Lite</a>
-    <a href="#/shop?category=white-coat">White Coats</a>
-    <a href="#/shop?category=caps">Surgical Caps</a>
+    <a href="#/shop?gender=women">Shop Women</a>
+    <a href="#/shop?gender=men">Shop Men</a>
+    <a href="#/shop">All products</a>
     <a href="#/size-guide">Size Guide</a>
     <a href="#/about">About &amp; Contact</a>`;
 
@@ -699,7 +650,6 @@ function initHeader() {
 function route() {
   cleanups.forEach((fn) => { try { fn(); } catch (e) { console.error(e); } });
   cleanups = [];
-  $('#mega').classList.remove('open');
   const hash = location.hash.slice(1) || '/';
   if (hash.startsWith('studio')) return; // in-page anchor
   const [path, qs] = hash.split('?');
