@@ -28,7 +28,7 @@ function makeRenderer(canvas, opts = {}) {
 }
 
 export class GarmentViewer {
-  constructor(container, product, { color, embroidery, onAngle, autoRotate = true } = {}) {
+  constructor(container, product, { color, embroidery, garment, onAngle, autoRotate = true } = {}) {
     this.container = container;
     this.onAngle = onAngle;
     this.canvas = document.createElement('canvas');
@@ -44,21 +44,22 @@ export class GarmentViewer {
     this.autoRotate = autoRotate; this.lastInteract = -1e9;
     this.visible = true;
 
-    this.setProduct(product, { color, embroidery });
+    this.setProduct(product, { color, embroidery, garment });
     this._bind();
     this._resize();
     this._loop = this._loop.bind(this);
     this.raf = requestAnimationFrame(this._loop);
   }
 
-  setProduct(product, { color, embroidery } = {}) {
+  setProduct(product, { color, embroidery, garment } = {}) {
     if (this.model) {
       this.pivot.remove(this.model.group);
       this.scene.remove(this.model.shadow);
       disposeObject(this.model.group);
     }
     this.product = product;
-    this.model = buildGarment(product, { color, embroidery });
+    this.variant = { color, garment };
+    this.model = buildGarment(product, { color, embroidery, garment });
     this.pivot.add(this.model.group);
     this.scene.add(this.model.shadow);
     const f = this.model.frame;
@@ -66,7 +67,7 @@ export class GarmentViewer {
     this.camera.lookAt(0, f.y, 0);
     this._pop = 0;
   }
-  setColor(hex) { this.setProduct(this.product, { color: hex, embroidery: this.embroidery }); }
+  setVariant({ color, garment }) { this.setProduct(this.product, { color, garment, embroidery: this.embroidery }); }
   setEmbroidery(text) { this.embroidery = text; this.model.setEmbroidery(text); }
 
   snapTo(deg) {
@@ -172,13 +173,13 @@ function getStill() {
   return still;
 }
 
-function renderNow({ product, angle = -28, color, w = 640, h = 800 }) {
+function renderNow({ product, angle = -28, color, garment, w = 640, h = 800 }) {
   const s = getStill();
   if (!s) return '';
   const { renderer, scene, camera } = s;
   renderer.setSize(w, h, false);
   camera.aspect = w / h;
-  const model = buildGarment(product, { color });
+  const model = buildGarment(product, { color, garment });
   model.group.rotation.y = THREE.MathUtils.degToRad(angle);
   scene.add(model.group); scene.add(model.shadow);
   const f = model.frame;
@@ -194,7 +195,7 @@ function renderNow({ product, angle = -28, color, w = 640, h = 800 }) {
 
 /** Async, queued, cached still render. Returns a data URL. */
 export function renderStill(opts) {
-  const key = `${opts.product.slug}|${opts.angle ?? -28}|${opts.color || ''}|${opts.w || 640}x${opts.h || 800}`;
+  const key = `${opts.product.slug}|${opts.angle ?? -28}|${opts.color || ''}|${JSON.stringify(opts.garment || {})}|${opts.w || 640}x${opts.h || 800}`;
   if (cache.has(key)) return cache.get(key);
   const p = new Promise((resolve) => queue.push({ opts, resolve }));
   cache.set(key, p);

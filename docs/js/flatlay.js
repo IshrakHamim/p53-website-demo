@@ -133,14 +133,14 @@ function foldedCoat(id, hex, p, { x, y, w, h }) {
 }
 
 /** Return an SVG string for a product's folded flat-lay. */
-export function flatlaySVG(product, { color, name = '' } = {}) {
+export function flatlaySVG(product, { color, name = '', garment } = {}) {
   const id = ++uid;
-  const hex = color || product.color.hex;
+  const hex = color || product.colors[0].hex;
   const p = pal(hex);
-  const g = product.garment;
+  const g = { ...product.garment, ...(garment || {}) };
   let body = '';
   if (g.type === 'cap') {
-    const vs = (product.variants || [hex]).slice(0, 3);
+    const vs = [hex, ...product.colors.map((c) => c.hex).filter((c) => c !== hex)].slice(0, 3);
     body = vs.map((c, i) => {
       const pid = `${id}_${i}`;
       return `${defs(pid, c)}${cap(pid, c, pal(c), { x: 60 + i * 150, y: 120 + (i % 2) * 70, s: 1.05 })}`;

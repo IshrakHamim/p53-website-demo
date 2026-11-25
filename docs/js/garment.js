@@ -479,8 +479,8 @@ function buildCap(group, hex) {
  * Returns { group, frame: {y, dist}, setEmbroidery }
  */
 export function buildGarment(product, opts = {}) {
-  const g = product.garment;
-  const hex = opts.color || product.color.hex;
+  const g = { ...product.garment, ...(opts.garment || {}) };
+  const hex = opts.color || product.colors[0].hex;
   const spec = { ...g, hex, embroidery: opts.embroidery || '' };
   const group = new THREE.Group();
   let api = { setEmbroidery() {} };
